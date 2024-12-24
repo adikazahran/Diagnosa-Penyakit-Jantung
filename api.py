@@ -98,36 +98,45 @@ def bar_chart(y_test, y_pred):
         return {"error": f"Kesalahan saat membuat bar chart: {e}"}
 
 # Fungsi untuk memuat data dari file
-def load_data(file_name):
+def load_data():
     try:
+        # Cari file di folder DATA_FOLDER
+        files = os.listdir(DATA_FOLDER)
+        if not files:
+            return {"error": "Folder data kosong. Pastikan ada file di folder 'data'."}
+        
+        # Ambil file pertama di folder
+        file_name = files[0]
         file_path = os.path.join(DATA_FOLDER, file_name)
-        # Pastikan file memiliki ekstensi yang benar
+        
+        # Deteksi format file berdasarkan ekstensi
         if file_name.endswith('.csv'):
             data = pd.read_csv(file_path)
         elif file_name.endswith(('.xlsx', '.xls')):
             data = pd.read_excel(file_path)
         else:
-            return {"error": "File harus berformat CSV atau Excel."}
+            return {"error": f"Format file '{file_name}' tidak didukung. Harus CSV atau Excel."}
         
         return data
     except Exception as e:
         return {"error": f"Kesalahan saat memuat file: {e}"}
 
-@app.route("/get-data", methods=["GET"])
-def get_data_paginated():
-    """
-    Endpoint untuk mengambil data yang sudah dimuat dengan paginasi.
-    """
+@app.route("/load-data", methods=["GET"])
+def load_and_paginate():
     global data_global
 
-    if data_global is None:
-        return jsonify({"error": "Data belum dimuat. Silakan unggah data terlebih dahulu menggunakan /load-data"}), 400
+    # Load data otomatis
+    data = load_data()
+    if "error" in data:
+        return jsonify(data), 400
+    
+    data_global = data  # Simpan data secara global
+    
+    # Ambil parameter paginasi dari query string
+    page = int(request.args.get("page", 1))  # Default halaman pertama
+    per_page = int(request.args.get("per_page", 10))  # Default 10 baris per halaman
 
     try:
-        # Ambil parameter paginasi dari query string
-        page = int(request.args.get("page", 1))  # Default halaman pertama
-        per_page = int(request.args.get("per_page", 10))  # Default 10 baris per halaman
-
         # Validasi parameter paginasi
         if page < 1 or per_page < 1:
             return jsonify({"error": "Parameter 'page' dan 'per_page' harus bernilai positif."}), 400
@@ -142,12 +151,12 @@ def get_data_paginated():
 
         # Siapkan respons
         response = {
-            "message": "Data berhasil diambil",
+            "message": "Data berhasil dimuat dan dipaginasikan",
             "columns": data_global.columns.tolist(),
             "total_rows": total_rows,
             "page": page,
             "per_page": per_page,
-            "data": paginated_data
+            "data": paginated_data,
         }
 
         return jsonify(response), 200
