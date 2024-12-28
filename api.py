@@ -249,7 +249,7 @@ def classification_report_bar_chart():
 def diagnosa_form():
     try:
         # Ambil data dari form-data
-        data = request.form
+        data = request.json
         required_fields = [
             "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
             "thalach", "exang", "oldpeak", "slope", "ca", "thal"
