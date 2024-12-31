@@ -21,8 +21,11 @@ os.makedirs(DATA_FOLDER, exist_ok=True)
 # Variabel global untuk menyimpan data uji dan prediksi
 y_test_global = None
 y_pred_global = None
+X_test_global = None
 data_global = None  # Variabel untuk menyimpan data global yang diupload
 clf = None
+target_global = None # Variabel untuk menyimpan target label secara global
+test_size_global = 0.3 # Variabel global untuk menyimpan test size
 
 # Fungsi untuk menghitung jumlah label
 def jumlah_label(data, target_column):
@@ -47,6 +50,8 @@ def chart(data, target_column):
 
 # Fungsi untuk split data dan melatih model
 def spliting_data(data, target_column, test_size=0.3, seed=0):
+    global X_test_global  # Deklarasikan variabel global
+
     if target_column not in data.columns:
         return None, None, None, None, None
 
@@ -54,7 +59,15 @@ def spliting_data(data, target_column, test_size=0.3, seed=0):
         X = data.drop(columns=[target_column])
         y = data[target_column]
 
-        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size, random_state=seed)
+        # Split data
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=test_size_global, random_state=seed)
+
+        # Pastikan X_test berbentuk array 2D
+        if len(X_test.shape) != 2:
+            X_test = X_test.values.reshape(-1, 1)
+
+        # Simpan X_test ke dalam variabel global
+        X_test_global = X_test
 
         clf = GaussianNB()
         clf.fit(X_train, y_train)
@@ -82,6 +95,29 @@ def prediksi(model, X_test, y_test):
 
     except Exception as e:
         return {"error": f"Kesalahan saat prediksi: {e}"}
+    
+def plot_roc_curve(y_test, y_pred_proba):
+    try:
+        fpr, tpr, thresholds = roc_curve(y_test, y_pred_proba)
+        roc_auc = auc(fpr, tpr)
+        
+        plt.figure()
+        plt.plot(fpr, tpr, color="blue", lw=2, label=f"ROC curve (area = {roc_auc:.2f})")
+        plt.plot([0, 1], [0, 1], color="gray", linestyle="--", lw=2)
+        plt.xlabel("False Positive Rate")
+        plt.ylabel("True Positive Rate")
+        plt.title("Receiver Operating Characteristic (ROC) Curve")
+        plt.legend(loc="lower right")
+        
+        # Simpan grafik ke folder
+        plot_path = os.path.join(GRAPH_FOLDER, "roc_curve.png")
+        plt.savefig(plot_path)
+        plt.close()
+        
+        return {"roc_curve_url": f"/{plot_path}"}
+    except Exception as e:
+        return {"error": f"Kesalahan saat membuat ROC Curve: {e}"}
+
 
 # Fungsi untuk membuat bar chart
 def bar_chart(y_test, y_pred):
@@ -99,36 +135,45 @@ def bar_chart(y_test, y_pred):
         return {"error": f"Kesalahan saat membuat bar chart: {e}"}
 
 # Fungsi untuk memuat data dari file
-def load_data(file_name):
+def load_data():
     try:
+        # Cari file di folder DATA_FOLDER
+        files = os.listdir(DATA_FOLDER)
+        if not files:
+            return {"error": "Folder data kosong. Pastikan ada file di folder 'data'."}
+        
+        # Ambil file pertama di folder
+        file_name = files[0]
         file_path = os.path.join(DATA_FOLDER, file_name)
-        # Pastikan file memiliki ekstensi yang benar
+        
+        # Deteksi format file berdasarkan ekstensi
         if file_name.endswith('.csv'):
             data = pd.read_csv(file_path)
         elif file_name.endswith(('.xlsx', '.xls')):
             data = pd.read_excel(file_path)
         else:
-            return {"error": "File harus berformat CSV atau Excel."}
+            return {"error": f"Format file '{file_name}' tidak didukung. Harus CSV atau Excel."}
         
         return data
     except Exception as e:
         return {"error": f"Kesalahan saat memuat file: {e}"}
 
-@app.route("/get-data", methods=["GET"])
-def get_data_paginated():
-    """
-    Endpoint untuk mengambil data yang sudah dimuat dengan paginasi.
-    """
+@app.route("/load-data", methods=["GET"])
+def load_and_paginate():
     global data_global
 
-    if data_global is None:
-        return jsonify({"error": "Data belum dimuat. Silakan unggah data terlebih dahulu menggunakan /load-data"}), 400
+    # Load data otomatis
+    data = load_data()
+    if "error" in data:
+        return jsonify(data), 400
+    
+    data_global = data  # Simpan data secara global
+    
+    # Ambil parameter paginasi dari query string
+    page = int(request.args.get("page", 1))  # Default halaman pertama
+    per_page = int(request.args.get("per_page", 10))  # Default 10 baris per halaman
 
     try:
-        # Ambil parameter paginasi dari query string
-        page = int(request.args.get("page", 1))  # Default halaman pertama
-        per_page = int(request.args.get("per_page", 10))  # Default 10 baris per halaman
-
         # Validasi parameter paginasi
         if page < 1 or per_page < 1:
             return jsonify({"error": "Parameter 'page' dan 'per_page' harus bernilai positif."}), 400
@@ -143,12 +188,12 @@ def get_data_paginated():
 
         # Siapkan respons
         response = {
-            "message": "Data berhasil diambil",
+            "message": "Data berhasil dimuat dan dipaginasikan",
             "columns": data_global.columns.tolist(),
             "total_rows": total_rows,
             "page": page,
             "per_page": per_page,
-            "data": paginated_data
+            "data": paginated_data,
         }
 
         return jsonify(response), 200
@@ -163,11 +208,12 @@ def label_counts():
         return jsonify({"error": "Data belum dimuat"}), 400
 
     try:
+        global target_global
         target_column = request.args.get("target_column")
         if not target_column:
             return jsonify({"error": "Parameter 'target_column' diperlukan"}), 400
-
-        result = jumlah_label(data_global, target_column)
+        target_global = target_column
+        result = jumlah_label(data_global, target_global)
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -179,11 +225,10 @@ def visualize_labels():
         return jsonify({"error": "Data belum dimuat"}), 400
 
     try:
-        target_column = request.args.get("target_column")
-        if not target_column:
+        if not target_global:
             return jsonify({"error": "Parameter 'target_column' diperlukan"}), 400
         
-        result = chart(data_global, target_column)
+        result = chart(data_global, target_global)
         return jsonify(result), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
@@ -193,24 +238,35 @@ def train_model_form_data():
     """
     Endpoint untuk melatih model menggunakan kolom target yang dikirimkan dalam form-data.
     """
-    global data_global, clf, y_test_global, y_pred_global
+    global data_global, clf, y_test_global, y_pred_global, target_global, test_size_global
     clf = GaussianNB()
 
     if data_global is None:
         return jsonify({"error": "Data belum dimuat"}), 400
 
     try:
-        # Ambil kolom target dari form-data
-        target_column = request.form.get("target_column")
-        if not target_column:
-            return jsonify({"error": "Parameter 'target_column' diperlukan"}), 400
+        # Periksa apakah target_column sudah diset
+        if not target_global:
+            return jsonify({"error": "Target column belum diset. Pastikan Anda telah mengatur target dengan /label-counts."}), 400
 
-        # Periksa apakah kolom target ada di dataset
-        if target_column not in data_global.columns:
-            return jsonify({"error": f"Kolom '{target_column}' tidak ditemukan dalam dataset."}), 400
+        # Ambil test_size dari input JSON
+        data = request.get_json()
+        if not data:
+            return jsonify({"error": "Input harus berupa JSON dengan 'test_size' sebagai parameter opsional."}), 400
+
+        test_size = data.get("test_size", test_size_global)  # Gunakan test_size_global jika tidak ada input
+        if test_size is not None:
+            try:
+                test_size = float(test_size)
+                if not (0.1 <= test_size <= 0.9):
+                    return jsonify({"error": "Parameter 'test_size' harus bernilai di antara 0.1 dan 0.9."}), 400
+                test_size_global = test_size
+            except ValueError:
+                return jsonify({"error": "Parameter 'test_size' harus berupa angka."}), 400
+
 
         # Latih model
-        clf, X_train, X_test, y_train, y_test = spliting_data(data_global, target_column)
+        clf, X_train, X_test, y_train, y_test = spliting_data(data_global, target_global)
         if clf is None:
             return jsonify({"error": "Kesalahan saat melatih model"}), 500
 
@@ -237,11 +293,30 @@ def classification_report_bar_chart():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+@app.route("/roc-curve", methods=["GET"])
+def roc_curve_endpoint():
+    if y_test_global is None or X_test_global is None:
+        return jsonify({"error": "Model belum dilatih atau data uji tidak tersedia"}), 400
+
+    try:
+        # Pastikan X_test_global berbentuk array 2D
+        if len(X_test_global.shape) != 2:
+            return jsonify({"error": "X_test_global tidak berbentuk array 2D"}), 400
+
+        # Hitung probabilitas prediksi menggunakan X_test_global
+        y_pred_proba = clf.predict_proba(X_test_global)[:, 1]
+
+        # Buat grafik ROC Curve
+        result = plot_roc_curve(y_test_global, y_pred_proba)
+        return jsonify(result), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/diagnosa", methods=["POST"])
 def diagnosa_form():
     try:
         # Ambil data dari form-data
-        data = request.form
+        data = request.json
         required_fields = [
             "age", "sex", "cp", "trestbps", "chol", "fbs", "restecg",
             "thalach", "exang", "oldpeak", "slope", "ca", "thal"
