@@ -1,3 +1,4 @@
+# Librarys
 from flask import Flask, request, jsonify
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -365,4 +366,4 @@ def diagnosa_form():
         return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
