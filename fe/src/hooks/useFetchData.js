@@ -31,7 +31,7 @@ export const useFetchData = () => {
   const trainModel = async () => {
     try {
       const response = await axiosInstance.post('/train-model', {
-        test_size: 0.3
+        test_size: 0.2
       })
       return response.data
     } catch (e) {
