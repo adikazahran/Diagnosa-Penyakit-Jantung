@@ -5,9 +5,11 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report, roc_curve, auc
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Folder untuk menyimpan grafik
 GRAPH_FOLDER = "static/graphs"
