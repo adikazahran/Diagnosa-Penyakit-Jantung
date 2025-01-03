@@ -135,6 +135,7 @@ def diagnosa(model):
     # Prediksi menggunakan model
     try:
         prediction = model.predict(new_patient_df)
+        print(prediction[0])
         result = "Positif" if prediction[0] == 1 else "Negatif"
         print(f"\nHasil Prediksi: Pasien {result} Penyakit Jantung")
     except Exception as e:
