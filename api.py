@@ -6,9 +6,11 @@ import seaborn as sns
 from sklearn.model_selection import train_test_split
 from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report, roc_curve, auc
+from flask_cors import CORS
 import os
 
 app = Flask(__name__)
+CORS(app)
 
 # Folder untuk menyimpan grafik
 GRAPH_FOLDER = "static/graphs"
@@ -49,7 +51,7 @@ def chart(data, target_column):
     return {"plot_url": f"/{plot_path}"}
 
 # Fungsi untuk split data dan melatih model
-def spliting_data(data, target_column, test_size=0.3, seed=0):
+def spliting_data(data, target_column, test_size=0.2, seed=0):
     global X_test_global  # Deklarasikan variabel global
 
     if target_column not in data.columns:
