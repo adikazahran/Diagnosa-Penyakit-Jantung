@@ -1,8 +1,10 @@
 import { useState } from 'react';
 import { Container, TextField, MenuItem, Select, InputLabel, FormControl, Button, Grid, Typography, FormHelperText, Box } from '@mui/material';
 import axiosInstance from '../api/axios';
+import { useNavigate } from 'react-router-dom';
 
 const DiagnosaPage = () => {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     age: '',
     sex: '',
@@ -36,7 +38,10 @@ const DiagnosaPage = () => {
     e.preventDefault();
     try {
       const response = await axiosInstance.post('/diagnosa', formData);
-      console.log(response.data);
+      const { prediction } = response.data;
+      navigate('/result-diagnosa', {
+        state: { formData, prediction }
+      });
     } catch (e) {
       console.error(e);
     }
