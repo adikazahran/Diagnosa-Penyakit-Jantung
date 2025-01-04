@@ -13,7 +13,7 @@ function HomePage() {
     labelCounts();
     trainModel();
     setSuccess(true);
-    setTimeout(() => navigate('/diagnosa'), 1000); // Beri jeda untuk feedback pengguna
+    setTimeout(() => navigate('/diagnosa'), 1000);
   };
 
   return (
@@ -24,9 +24,11 @@ function HomePage() {
         alignItems: 'center',
         justifyContent: 'center',
         minHeight: '100vh',
-        background: 'linear-gradient(135deg, #e3f2fd, #ffffff)', // Gradasi background
-        padding: 4,
-        boxSizing: 'border-box',
+        width: '100%',
+        background: 'linear-gradient(135deg, #e3f2fd, #ffffff)',
+        padding: '0px !important',
+        margin: '0px !important',
+        // boxSizing: 'border-box',
       }}
     >
       {/* Gambar Header */}
@@ -164,12 +166,17 @@ function HomePage() {
       <Box
         sx={{
           marginTop: 6,
-          padding: 2,
+          padding: '2px 2px 0 2px',
           backgroundColor: '#1e88e5',
+          height: '50px',
           color: '#fff',
           width: '100%',
           textAlign: 'center',
-          borderRadius: '8px',
+          position: 'relative',
+          bottom: 0,
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
         }}
       >
         <Typography variant="body2">
@@ -185,7 +192,7 @@ function HomePage() {
         onClose={() => setSuccess(false)}
         sx={{
           '& .MuiSnackbarContent-root': {
-            backgroundColor: '#388e3c', // Warna hijau sukses
+            backgroundColor: '#388e3c',
           },
         }}
       />
