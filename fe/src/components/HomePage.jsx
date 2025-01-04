@@ -2,7 +2,7 @@ import React from 'react';
 import { Box, Button, Typography, Snackbar, Grid, Paper } from '@mui/material';
 import { useFetchData } from '../hooks/useFetchData';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar';  // Import Navbar component
+import Navbar from './Navbar'; 
 
 function HomePage() {
   const { loadData, labelCounts, trainModel } = useFetchData();

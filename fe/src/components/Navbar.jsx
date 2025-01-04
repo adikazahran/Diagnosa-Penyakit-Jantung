@@ -2,14 +2,27 @@ import React, { useState } from 'react';
 import { AppBar, Toolbar, Box, Button, IconButton, Drawer, List, ListItem, ListItemText } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 import MenuIcon from '@mui/icons-material/Menu';
+import { useFetchData } from '../hooks/useFetchData';
 
 const Navbar = () => {
+  const { loadData, labelCounts, trainModel } = useFetchData();  
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [success, setSuccess] = useState(false);
+  
 
   // Toggle Drawer
   const toggleDrawer = (state) => {
     setOpen(state);
+  };
+
+  // Handle Click Function
+  const handleClick = () => {
+    loadData();
+    labelCounts();
+    trainModel();
+    setSuccess(true);
+    setTimeout(() => navigate('/diagnosa'), 1000); 
   };
 
   return (
@@ -55,7 +68,7 @@ const Navbar = () => {
             </Button>
             <Button
               color="inherit"
-              onClick={() => navigate('/diagnosa')}
+              onClick={handleClick}
               sx={{
                 '&:hover': { backgroundColor: '#63a4ff' },
                 marginLeft: 3,
@@ -113,7 +126,7 @@ const Navbar = () => {
             <ListItem button onClick={() => navigate('/')}>
               <ListItemText primary="Home" />
             </ListItem>
-            <ListItem button onClick={() => navigate('/diagnosa')}>
+            <ListItem button onClick={() => handleClick()}>
               <ListItemText primary="Diagnosa" />
             </ListItem>
             <ListItem button onClick={() => navigate('/tips')}>
