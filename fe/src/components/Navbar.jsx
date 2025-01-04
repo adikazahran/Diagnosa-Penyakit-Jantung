@@ -17,10 +17,10 @@ const Navbar = () => {
   };
 
   // Handle Click Function
-  const handleClick = () => {
-    loadData();
-    labelCounts();
-    trainModel();
+  const handleClick = async () => {
+    await loadData();
+    await labelCounts();
+    await trainModel();
     setSuccess(true);
     setTimeout(() => navigate('/diagnosa'), 1000); 
   };
