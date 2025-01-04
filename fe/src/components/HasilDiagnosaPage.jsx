@@ -1,11 +1,15 @@
 import { useLocation } from 'react-router-dom';
 import { Container, Typography, Box, Grid, Paper } from '@mui/material';
+import Navbar from './Navbar';
 
 const ResultDiagnosaPage = () => {
   const location = useLocation();
   const { formData, prediction } = location.state || {};
 
   return (
+    <Box>
+      {/* Navbar */}
+      <Navbar />
     <Container maxWidth="md" sx={{ paddingTop: 4, paddingBottom: 4 }}>
       <Typography variant="h4" align="center" gutterBottom sx={{ fontWeight: 'bold', color: '#1e88e5' }}>
         Hasil Diagnosa Pasien
@@ -16,9 +20,18 @@ const ResultDiagnosaPage = () => {
           Prediksi Diagnosis:
         </Typography>
         <Typography variant="body1" sx={{ marginTop: 2 }}>
-          {prediction ? prediction : 'Data tidak ditemukan.'}
+                {prediction ? (
+            <>
+                Hasil pemeriksaan menunjukkan bahwa pasien tersebut{' '}
+                <Typography component="span" sx={{ fontWeight: 'bold', fontStyle: 'italic' }}>
+                {prediction}
+                </Typography>{' '}
+                untuk saat ini.
+            </>
+            ) : (
+            'Data tidak ditemukan. Mohon coba kembali.'
+            )}
         </Typography>
-
         {/* Display user input data */}
         <Typography variant="h6" sx={{ fontWeight: 'bold', marginTop: 3 }}>
           Data Input Pasien:
@@ -65,6 +78,7 @@ const ResultDiagnosaPage = () => {
         </Paper>
       </Box>
     </Container>
+    </Box>
   );
 };
 
