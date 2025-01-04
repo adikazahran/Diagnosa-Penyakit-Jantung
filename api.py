@@ -51,7 +51,7 @@ def chart(data, target_column):
     return {"plot_url": f"/{plot_path}"}
 
 # Fungsi untuk split data dan melatih model
-def spliting_data(data, target_column, test_size=0.3, seed=0):
+def spliting_data(data, target_column, test_size=0.2, seed=0):
     global X_test_global  # Deklarasikan variabel global
 
     if target_column not in data.columns:
