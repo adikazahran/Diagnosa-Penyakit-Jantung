@@ -13,6 +13,7 @@ export const useFetchData = () => {
       const response = await axiosInstance.get('/load-data?target_column=target');
       setData(response.data);
     } catch (err) {
+      console.log(err)
       setError(err.message || 'Terjadi kesalahan saat memuat data');
     } finally {
       setLoading(false);
