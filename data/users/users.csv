@@ -1,0 +1,2 @@
+username,password
+testuser,pbkdf2:sha256:600000$lbbGfu7dclzlndsI$b2f31cfa43f464c3bc9c77b0a020ef544fccf51398525b00e09edd82684b810c

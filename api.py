@@ -8,6 +8,7 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.metrics import accuracy_score, classification_report, roc_curve, auc
 from flask_cors import CORS
 import os
+from werkzeug.security import generate_password_hash, check_password_hash
 
 app = Flask(__name__)
 CORS(app)
@@ -19,6 +20,11 @@ os.makedirs(GRAPH_FOLDER, exist_ok=True)
 # Folder untuk menyimpan file dataset
 DATA_FOLDER = "data"
 os.makedirs(DATA_FOLDER, exist_ok=True)
+
+# Folder untuk menyimpan file pengguna
+USER_FOLDER = "data/users"
+os.makedirs(USER_FOLDER, exist_ok=True)
+USER_FILE = os.path.join(USER_FOLDER, "users.csv")
 
 # Variabel global untuk menyimpan data uji dan prediksi
 y_test_global = None
@@ -159,6 +165,64 @@ def load_data():
         return data
     except Exception as e:
         return {"error": f"Kesalahan saat memuat file: {e}"}
+
+# Fungsi untuk mendaftarkan pengguna baru
+@app.route("/register", methods=["POST"])
+def register():
+    try:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Username dan password diperlukan."}), 400
+
+        # Baca data pengguna
+        users = pd.read_csv(USER_FILE)
+
+        # Periksa apakah pengguna sudah ada
+        if username in users["username"].values:
+            return jsonify({"error": "Username sudah terdaftar."}), 400
+
+        # Hash password dan simpan pengguna baru
+        hashed_password = generate_password_hash(password)
+        new_user = pd.DataFrame({"username": [username], "password": [hashed_password]})
+        users = pd.concat([users, new_user], ignore_index=True)
+        users.to_csv(USER_FILE, index=False)
+
+        return jsonify({"message": "Pendaftaran berhasil."}), 201
+
+    except Exception as e:
+        return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
+
+# Fungsi untuk login pengguna
+@app.route("/login", methods=["POST"])
+def login():
+    try:
+        data = request.json
+        username = data.get("username")
+        password = data.get("password")
+
+        if not username or not password:
+            return jsonify({"error": "Username dan password diperlukan."}), 400
+
+        # Baca data pengguna
+        users = pd.read_csv(USER_FILE)
+
+        # Periksa apakah pengguna ada
+        user = users[users["username"] == username]
+        if user.empty:
+            return jsonify({"error": "Username atau password salah."}), 400
+
+        # Verifikasi password
+        hashed_password = user.iloc[0]["password"]
+        if not check_password_hash(hashed_password, password):
+            return jsonify({"error": "Username atau password salah."}), 400
+
+        return jsonify({"message": "Login berhasil."}), 200
+
+    except Exception as e:
+        return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
 
 @app.route("/load-data", methods=["GET"])
 def load_and_paginate():
