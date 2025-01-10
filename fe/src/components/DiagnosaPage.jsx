@@ -96,18 +96,18 @@ const DiagnosaPage = () => {
                     value={formData.cp}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={1}>Angina Tipikal</MenuItem>
-                    <MenuItem value={2}>Angina Atipikal</MenuItem>
-                    <MenuItem value={3}>Nyeri Non Angina</MenuItem>
-                    <MenuItem value={4}>Asimtomatik</MenuItem>
+                    <MenuItem value={0}>Angina Tipikal</MenuItem>
+                    <MenuItem value={1}>Angina Atipikal</MenuItem>
+                    <MenuItem value={2}>Nyeri Non Angina</MenuItem>
+                    <MenuItem value={3}>Asimtomatik</MenuItem>
                   </Select>
                   <FormHelperText>
                     Menilai jenis nyeri dada yang dialami pasien:
                     <ul>
-                      <li>1: Angina Tipikal - Nyeri dada yang khas akibat iskemia jantung.</li>
-                      <li>2: Angina Atipikal - Nyeri dada yang tidak khas dan mungkin lebih ringan.</li>
-                      <li>3: Nyeri Non-Angina - Nyeri dada yang bukan disebabkan oleh masalah jantung.</li>
-                      <li>4: Asimtomatik - Tidak ada gejala nyeri dada.</li>
+                      <li>0: Angina Tipikal - Nyeri dada yang khas akibat iskemia jantung.</li>
+                      <li>1: Angina Atipikal - Nyeri dada yang tidak khas dan mungkin lebih ringan.</li>
+                      <li>2: Nyeri Non-Angina - Nyeri dada yang bukan disebabkan oleh masalah jantung.</li>
+                      <li>3: Asimtomatik - Tidak ada gejala nyeri dada.</li>
                     </ul>
                   </FormHelperText>
                 </FormControl>
@@ -237,9 +237,9 @@ const DiagnosaPage = () => {
                     value={formData.slope}
                     onChange={handleInputChange}
                   >
-                    <MenuItem value={1}>Miring ke Atas</MenuItem>
-                    <MenuItem value={2}>Datar</MenuItem>
-                    <MenuItem value={3}>Miring ke Bawah</MenuItem>
+                    <MenuItem value={0}>Miring ke Atas</MenuItem>
+                    <MenuItem value={1}>Datar</MenuItem>
+                    <MenuItem value={2}>Miring ke Bawah</MenuItem>
                   </Select>
                   <FormHelperText>Nilai kemiringan segmen ST saat latihan.</FormHelperText>
                 </FormControl>

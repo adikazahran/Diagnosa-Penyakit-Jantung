@@ -2,14 +2,17 @@ import React from 'react';
 import { Box, Button, Typography, Snackbar, Grid, Paper } from '@mui/material';
 import { useFetchData } from '../hooks/useFetchData';
 import { useNavigate } from 'react-router-dom';
-import Navbar from './Navbar'; 
+import Navbar from './Navbar';
+
 
 function HomePage() {
   const { loadData, labelCounts, trainModel } = useFetchData();
   const [success, setSuccess] = React.useState(false);
+  const [isLoggedIn, setIsLoggedIn] = React.useState(false); // Track login status
   const navigate = useNavigate();
+  const username = localStorage.getItem('username');
 
-  const handleClick = () => {
+  const handleClickDiagnosa = () => {    
     loadData();
     labelCounts();
     trainModel();
@@ -19,7 +22,7 @@ function HomePage() {
 
   return (
     <Box>
-      <Navbar /> {/* Add Navbar here */}
+      <Navbar username={username}/> {/* Add Navbar here */}
       <Box
         sx={{
           display: 'flex',
@@ -40,11 +43,11 @@ function HomePage() {
             maxWidth: '650px',
             marginBottom: 4,
             borderRadius: '12px',
-            overflow: 'hidden',          
+            overflow: 'hidden',
           }}
         >
           <img
-            src="assets/hati.png"
+            src="assets/str.png"
             alt="Header Image"
             style={{
               width: '100%',
@@ -99,7 +102,7 @@ function HomePage() {
               boxShadow: '0 6px 20px rgba(0, 0, 0, 0.15)',
             },
           }}
-          onClick={handleClick}
+          onClick={handleClickDiagnosa}
         >
           Mulai Diagnosa
         </Button>
@@ -141,13 +144,13 @@ function HomePage() {
             color="primary"
             size="small"
             sx={{
-              padding: '8px 20px', 
-              fontSize: '1rem', 
-              borderRadius: '8px', 
+              padding: '8px 20px',
+              fontSize: '1rem',
+              borderRadius: '8px',
               boxShadow: '0 3px 10px rgba(0, 0, 0, 0.1)',
               '&:hover': {
                 backgroundColor: '#1565c0',
-                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',  
+                boxShadow: '0 4px 15px rgba(0, 0, 0, 0.15)',
               },
             }}
             onClick={() => navigate('/tips')}
@@ -155,31 +158,6 @@ function HomePage() {
             Tips Pencegahan
           </Button>
         </Box>
-
-        {/* Kontak atau Bantuan */}
-        <Grid
-          container
-          spacing={2}
-          sx={{ marginTop: 4, justifyContent: 'center', textAlign: 'center' }}
-        >
-          <Grid item xs={12} sm={6}>
-            <Paper
-              sx={{
-                padding: 2,
-                backgroundColor: '#fff',
-                boxShadow: '0 4px 10px rgba(0, 0, 0, 0.1)',
-                borderRadius: '8px',
-              }}
-            >
-              <Typography variant="h6" sx={{ fontWeight: 'bold', color: '#1e88e5' }}>
-                Butuh Bantuan?
-              </Typography>
-              <Typography variant="body2" sx={{ color: '#555' }}>
-                Anda dapat menghubungi kami melalui email di <strong>HanifJykt12@gmail.com</strong> untuk bantuan lebih lanjut.
-              </Typography>
-            </Paper>
-          </Grid>
-        </Grid>
 
         {/* Footer */}
         <Box
@@ -203,19 +181,6 @@ function HomePage() {
             © 2025 Diagnosa Stroke - Kelompok Gerak Cepat By Hanif.
           </Typography>
         </Box>
-
-        {/* Snackbar untuk Feedback */}
-        <Snackbar
-          open={success}
-          message="Request Berhasil!"
-          autoHideDuration={3000}
-          onClose={() => setSuccess(false)}
-          sx={{
-            '& .MuiSnackbarContent-root': {
-              backgroundColor: '#388e3c',
-            },
-          }}
-        />
       </Box>
     </Box>
   );
