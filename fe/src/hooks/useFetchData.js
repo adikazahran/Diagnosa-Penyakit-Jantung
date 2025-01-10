@@ -39,12 +39,35 @@ export const useFetchData = () => {
       console.log(e);
     }
   }
+
+  const login = async (data) => {
+    try {
+      const response = await axiosInstance.post('/login', data);
+      return response.data; // Response berhasil
+    } catch (e) {
+      console.error(e);
+      return { error: e.response?.data?.message || 'Username atau Password salah.' }; // Error handling
+    }
+  };
+
+  const register = async (data) => {
+    try {
+      const response = await axiosInstance.post('/register', 
+        data
+      )
+      return response.data
+    } catch (e) {
+      console.log(e);
+    }
+  }
   return {
     loading,
     data,
     error,
     loadData,
     labelCounts,
-    trainModel
+    trainModel,
+    login,
+    register
   };
 };

@@ -146,9 +146,9 @@ def bar_chart(y_test, y_pred):
 def load_data():
     try:
         # Cari file di folder DATA_FOLDER
-        files = os.listdir(DATA_FOLDER)
+        files = [f for f in os.listdir(DATA_FOLDER) if f.endswith(('.csv', '.xlsx', '.xls'))]
         if not files:
-            return {"error": "Folder data kosong. Pastikan ada file di folder 'data'."}
+            return {"error": "Folder data kosong atau tidak ada file dengan format yang didukung."}
         
         # Ambil file pertama di folder
         file_name = files[0]
@@ -166,11 +166,17 @@ def load_data():
     except Exception as e:
         return {"error": f"Kesalahan saat memuat file: {e}"}
 
+
 # Fungsi untuk mendaftarkan pengguna baru
 @app.route("/register", methods=["POST"])
 def register():
     try:
         data = request.json
+        print("Payload received:", data)  # Debugging
+        
+        if not data or not isinstance(data, dict):
+            return jsonify({"error": "Payload tidak valid."}), 400
+        
         username = data.get("username")
         password = data.get("password")
 
@@ -178,7 +184,15 @@ def register():
             return jsonify({"error": "Username dan password diperlukan."}), 400
 
         # Baca data pengguna
-        users = pd.read_csv(USER_FILE)
+        try:
+            users = pd.read_csv(USER_FILE)
+        except FileNotFoundError:
+            users = pd.DataFrame(columns=["username", "password"])
+        
+        print("CSV content:", users.head())  # Debugging
+        
+        if "username" not in users.columns or "password" not in users.columns:
+            return jsonify({"error": "Kolom tidak valid pada file CSV."}), 500
 
         # Periksa apakah pengguna sudah ada
         if username in users["username"].values:
@@ -193,6 +207,7 @@ def register():
         return jsonify({"message": "Pendaftaran berhasil."}), 201
 
     except Exception as e:
+        print("Exception:", str(e))  # Debugging
         return jsonify({"error": f"Terjadi kesalahan: {str(e)}"}), 500
 
 # Fungsi untuk login pengguna
@@ -414,12 +429,17 @@ def diagnosa_form():
             "thal": int(data["thal"]),
         }])
 
-               # Prediksi menggunakan model
+        # Prediksi menggunakan model
         if clf is None:
             return jsonify({"error": "Model belum dilatih. Silakan latih model terlebih dahulu."}), 400
 
+        # Ketika Input Data positif
         prediction = clf.predict(patient_data)
         result = "Positif" if prediction[0] == 1 else "Negatif"
+
+        # # Ketika Input Data Negatif
+        # prediction = clf.predict(patient_data)
+        # result = "Negatif" if prediction[0] == 1 else "Positif"
 
         return jsonify({"prediction": result}), 200
 
